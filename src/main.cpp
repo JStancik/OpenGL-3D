@@ -23,19 +23,12 @@ void processInput(GLFWwindow *window){
 
 int main(){
 
-    glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-    glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-    vec = trans * vec;
-    std::cout << vec.x <<", "<< vec.y <<", "<< vec.z << std::endl;
-
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1024, 512, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL){
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -51,14 +44,35 @@ int main(){
         return -1;
     }
 
+    // Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS); 
+
     float position[] = {
-         0.0f, 1.0f, 1.0f, 1.0f, 0.1f, 0.9f, 0.1f,
-         1.0f,-1.0f, 1.0f, 1.0f, 0.9f, 0.7f, 0.2f,
-        -1.0f,-1.0f, 1.0f, 1.0f, 0.8f, 0.5f, 0.9f
+         1.0f, 1.0f, 1.0f,   0.8f, 0.9f, 0.1f,
+         1.0f, 1.0f,-1.0f,   0.7f, 0.8f, 0.2f,
+         1.0f,-1.0f, 1.0f,   0.6f, 0.7f, 0.3f,
+         1.0f,-1.0f,-1.0f,   0.5f, 0.6f, 0.4f,
+        -1.0f, 1.0f, 1.0f,   0.4f, 0.5f, 0.5f,
+        -1.0f, 1.0f,-1.0f,   0.3f, 0.4f, 0.6f,
+        -1.0f,-1.0f, 1.0f,   0.2f, 0.3f, 0.7f,
+        -1.0f,-1.0f,-1.0f,   0.1f, 0.2f, 0.8f
     };
 
     unsigned int index[] = {
-        0,1,2
+        0,2,4,
+        2,6,4,
+        3,1,5,
+        3,5,7,
+        1,0,4,
+        1,4,5,
+        6,2,3,
+        6,3,7,
+        4,6,7,
+        4,7,5,
+        2,0,1,
+        2,1,3
     };
     
     unsigned int vertexArray;
@@ -66,28 +80,41 @@ int main(){
     glGenVertexArrays(1,&vertexArray);
     glBindVertexArray(vertexArray);
 
-    Object obj(21 * sizeof(float),3 * sizeof(int),position,index);
+    Object obj(8*6 * sizeof(float),3*12 * sizeof(int),position,index);
 
     GLintptr vertAt0 = 0*sizeof(float);
-    GLintptr vertAt1 = 4*sizeof(float);
+    GLintptr vertAt1 = 3*sizeof(float);
 
     
-    obj.vb.enableAtributes(0,4,7 * sizeof(float),vertAt0);
-    obj.vb.enableAtributes(1,3,7 * sizeof(float),vertAt1);
+    obj.vb.enableAtributes(0,3,6 * sizeof(float),vertAt0);
+    obj.vb.enableAtributes(1,3,6 * sizeof(float),vertAt1);
 
     Shader shader("data/shaders/basicTriV.glsl","data/shaders/basicTriF.glsl");
+
+    int MVPID = glGetUniformLocation(shader.id,"MVP");
+
+	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 2.0f, 0.1f, 100.0f);
+	// Camera matrix
+	glm::mat4 View       = glm::lookAt(
+								glm::vec3(4,3,-3), // Camera is at (4,3,-3), in World Space
+								glm::vec3(0,0,0), // and looks at the origin
+								glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+						   );
+	// Model matrix : an identity matrix (model will be at the origin)
+	glm::mat4 Model      = glm::mat4(1.0f);
+	// Our ModelViewProjection : multiplication of our 3 matrices
+	glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
     glUseProgram(shader.id);
 
     while(!glfwWindowShouldClose(window)){
         processInput(window);
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-        shader.setUniformf("a" , 1.0f );
-        shader.setUniformf("zF", 10.0f);
-        shader.setUniformf("zN", 1.0f );
+        glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
 
-        glDrawElements(GL_TRIANGLES,3, GL_UNSIGNED_INT,nullptr);
+        glDrawElements(GL_TRIANGLES,12*3, GL_UNSIGNED_INT,nullptr);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
