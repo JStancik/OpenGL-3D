@@ -11,6 +11,8 @@
 #include "vertexBuffer.cpp"
 #include "renderer.cpp"
 #include "object.cpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
@@ -19,6 +21,31 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height){
 void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+int loadBMPTexture(const char * imagePath){
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // set the texture wrapping/filtering options (on the currently bound texture object)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load and generate the texture
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(imagePath, &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    return texture;
 }
 
 int main(){
@@ -50,14 +77,14 @@ int main(){
 	glDepthFunc(GL_LESS); 
 
     float position[] = {
-         1.0f, 1.0f, 1.0f,   0.8f, 0.9f, 0.1f,
-         1.0f, 1.0f,-1.0f,   0.7f, 0.8f, 0.2f,
-         1.0f,-1.0f, 1.0f,   0.6f, 0.7f, 0.3f,
-         1.0f,-1.0f,-1.0f,   0.5f, 0.6f, 0.4f,
-        -1.0f, 1.0f, 1.0f,   0.4f, 0.5f, 0.5f,
-        -1.0f, 1.0f,-1.0f,   0.3f, 0.4f, 0.6f,
-        -1.0f,-1.0f, 1.0f,   0.2f, 0.3f, 0.7f,
-        -1.0f,-1.0f,-1.0f,   0.1f, 0.2f, 0.8f
+         1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
+         1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
+         1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
+         1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
+        -1.0f, 1.0f, 1.0f,   1.0f, 0.0f,
+        -1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
+        -1.0f,-1.0f,-1.0f,   0.0f, 1.0f
     };
 
     unsigned int index[] = {
@@ -80,16 +107,16 @@ int main(){
     glGenVertexArrays(1,&vertexArray);
     glBindVertexArray(vertexArray);
 
-    Object obj(8*6 * sizeof(float),3*12 * sizeof(int),position,index);
+    Object obj(8*5 * sizeof(float),3*12 * sizeof(int),position,index);
 
     GLintptr vertAt0 = 0*sizeof(float);
     GLintptr vertAt1 = 3*sizeof(float);
 
     
-    obj.vb.enableAtributes(0,3,6 * sizeof(float),vertAt0);
-    obj.vb.enableAtributes(1,3,6 * sizeof(float),vertAt1);
+    obj.vb.enableAtributes(0,3,5 * sizeof(float),vertAt0);
+    obj.vb.enableAtributes(1,2,5 * sizeof(float),vertAt1);
 
-    Shader shader("data/shaders/basicTriV.glsl","data/shaders/basicTriF.glsl");
+    Shader shader("data/shaders/texTriV.glsl","data/shaders/texTriF.glsl");
 
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
@@ -105,6 +132,9 @@ int main(){
 	// Our ModelViewProjection : multiplication of our 3 matrices
 	glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
+    int tex = loadBMPTexture("data/gfx/happy.png");
+    int textureID = glGetUniformLocation(shader.id,"TexSampler");
+
     glUseProgram(shader.id);
 
     while(!glfwWindowShouldClose(window)){
@@ -112,9 +142,14 @@ int main(){
 
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-        glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		glUniform1i(textureID, 0);
 
-        glDrawElements(GL_TRIANGLES,12*3, GL_UNSIGNED_INT,nullptr);
+        glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
+        glUniform1i(textureID,0);
+
+        glDrawElements(GL_TRIANGLES,12*3, GL_UNSIGNED_INT,0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
