@@ -49,7 +49,7 @@ int main(){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_DECORATED, false);
+    glfwWindowHint(GLFW_CURSOR_HIDDEN,true);
     
     GLFWwindow* window = glfwCreateWindow(1024, 512, "LearnOpenGL", NULL, NULL);
 
@@ -61,6 +61,7 @@ int main(){
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -72,14 +73,16 @@ int main(){
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
+    glEnable(GL_CULL_FACE);
+
     // position
     glm::vec3 camPosition = glm::vec3(0, 0, 5);
     float horizontalAngle = 3.14f;
     float verticalAngle = 0.0f;
     float initialFoV = 45.0f;
 
-    float speed = 3.0f; // 3 units / second
-    float mouseSpeed = 0.005f;
+    float speed = 5.0f; // 3 units / second
+    float mouseSpeed = 0.2f;
     float lastTime;
     float deltaTime;
 
@@ -95,18 +98,18 @@ int main(){
     };
 
     unsigned int index[] = {
-        0,2,4,
-        2,6,4,
-        3,1,5,
-        3,5,7,
-        1,0,4,
-        1,4,5,
-        6,2,3,
-        6,3,7,
-        4,6,7,
-        4,7,5,
-        2,0,1,
-        2,1,3
+        4,2,0,
+        4,6,2,
+        5,1,3,
+        7,5,3,
+        4,0,1,
+        5,4,1,
+        3,2,6,
+        7,3,6,
+        7,6,4,
+        5,7,4,
+        1,0,2,
+        3,1,2
     };
     
     unsigned int vertexArray;
@@ -140,7 +143,7 @@ int main(){
         // Reset mouse position for next frame
         glfwSetCursorPos(window,1024/2, 512/2);
         // Compute new orientation
-        horizontalAngle += mouseSpeed * deltaTime * float(1024/2 - xpos );
+        horizontalAngle -= mouseSpeed * deltaTime * float(1024/2 - xpos );
         verticalAngle   += mouseSpeed * deltaTime * float( 512/2 - ypos );
         // Direction : Spherical coordinates to Cartesian coordinates conversion
         glm::vec3 direction(
@@ -165,6 +168,8 @@ int main(){
         deltaTime = float(currentTime - lastTime);
         lastTime = currentTime;
 
+        glfwPollEvents();
+
         if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
             glfwSetWindowShouldClose(window, true);
         }
@@ -183,6 +188,14 @@ int main(){
         // Strafe left
         if (glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS){
             camPosition -= right * deltaTime * speed;
+        }
+        // Move up
+        if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS){
+            camPosition += up * deltaTime * speed;
+        }
+        // Move down
+        if (glfwGetKey( window, GLFW_KEY_LEFT_SHIFT ) == GLFW_PRESS){
+            camPosition -= up * deltaTime * speed;
         }
 
 
