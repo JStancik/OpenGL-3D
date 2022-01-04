@@ -18,11 +18,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window){
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
-
 int loadBMPTexture(const char * imagePath){
     unsigned int texture;
     glGenTextures(1, &texture);
@@ -54,6 +49,7 @@ int main(){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_DECORATED, false);
     
     GLFWwindow* window = glfwCreateWindow(1024, 512, "LearnOpenGL", NULL, NULL);
 
@@ -74,9 +70,20 @@ int main(){
     // Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS); 
+	glDepthFunc(GL_LESS);
 
-    float position[] = {
+    // position
+    glm::vec3 camPosition = glm::vec3(0, 0, 5);
+    float horizontalAngle = 3.14f;
+    float verticalAngle = 0.0f;
+    float initialFoV = 45.0f;
+
+    float speed = 3.0f; // 3 units / second
+    float mouseSpeed = 0.005f;
+    float lastTime;
+    float deltaTime;
+
+    float vecPosition[] = {
          1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
          1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
          1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
@@ -107,7 +114,7 @@ int main(){
     glGenVertexArrays(1,&vertexArray);
     glBindVertexArray(vertexArray);
 
-    Object obj(8*5 * sizeof(float),3*12 * sizeof(int),position,index);
+    Object obj(8*5 * sizeof(float),3*12 * sizeof(int),vecPosition,index);
 
     GLintptr vertAt0 = 0*sizeof(float);
     GLintptr vertAt1 = 3*sizeof(float);
@@ -120,17 +127,6 @@ int main(){
 
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 2.0f, 0.1f, 100.0f);
-	// Camera matrix
-	glm::mat4 View       = glm::lookAt(
-								glm::vec3(4,3,-3), // Camera is at (4,3,-3), in World Space
-								glm::vec3(0,0,0), // and looks at the origin
-								glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-						   );
-	// Model matrix : an identity matrix (model will be at the origin)
-	glm::mat4 Model      = glm::mat4(1.0f);
-	// Our ModelViewProjection : multiplication of our 3 matrices
-	glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
     int tex = loadBMPTexture("data/gfx/happy.png");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
@@ -138,7 +134,57 @@ int main(){
     glUseProgram(shader.id);
 
     while(!glfwWindowShouldClose(window)){
-        processInput(window);
+        // Get mouse position
+        double xpos, ypos;
+        glfwGetCursorPos(window,&xpos,&ypos);
+        // Reset mouse position for next frame
+        glfwSetCursorPos(window,1024/2, 512/2);
+        // Compute new orientation
+        horizontalAngle += mouseSpeed * deltaTime * float(1024/2 - xpos );
+        verticalAngle   += mouseSpeed * deltaTime * float( 512/2 - ypos );
+        // Direction : Spherical coordinates to Cartesian coordinates conversion
+        glm::vec3 direction(
+            cos(verticalAngle) * sin(horizontalAngle),
+            sin(verticalAngle),
+            cos(verticalAngle) * cos(horizontalAngle)
+        );
+
+        // Right vector
+        glm::vec3 right = glm::vec3(
+            sin(horizontalAngle - 3.14f/2.0f),
+            0,
+            cos(horizontalAngle - 3.14f/2.0f)
+        );
+
+        // Up vector : perpendicular to both direction and right
+        glm::vec3 up = glm::cross( right, direction );
+
+        float FoV = 85;
+
+        float currentTime = glfwGetTime();
+        deltaTime = float(currentTime - lastTime);
+        lastTime = currentTime;
+
+        if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
+            glfwSetWindowShouldClose(window, true);
+        }
+        // Move forward
+        if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
+            camPosition += direction * deltaTime * speed;
+        }
+        // Move backward
+        if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
+            camPosition -= direction * deltaTime * speed;
+        }
+        // Strafe right
+        if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
+            camPosition += right * deltaTime * speed;
+        }
+        // Strafe left
+        if (glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS){
+            camPosition -= right * deltaTime * speed;
+        }
+
 
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
@@ -146,13 +192,25 @@ int main(){
 		// Set our "myTextureSampler" sampler to use Texture Unit 0
 		glUniform1i(textureID, 0);
 
+        glm::mat4 Projection = glm::perspective(glm::radians(FoV), 2.0f, 0.1f, 100.0f);
+        // Camera matrix
+        glm::mat4 View       = glm::lookAt(
+                                    camPosition,
+                                    camPosition+direction, 
+                                    up
+                            );
+        // Model matrix : an identity matrix (model will be at the origin)
+        glm::mat4 Model      = glm::mat4(1.0f);
+        // Our ModelViewProjection : multiplication of our 3 matrices
+        glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+
         glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
         glUniform1i(textureID,0);
 
         glDrawElements(GL_TRIANGLES,12*3, GL_UNSIGNED_INT,0);
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
     glDeleteBuffers(1,&obj.vb.buffer);
