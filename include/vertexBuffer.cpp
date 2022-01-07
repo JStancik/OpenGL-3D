@@ -6,8 +6,6 @@
 
 #include "vertexBuffer.hpp"
 
-VertexBuffer::VertexBuffer(){}
-
 VertexBuffer::VertexBuffer(int charSize, float data[]){
 	glGenBuffers(1,&buffer);
     glBindBuffer(GL_ARRAY_BUFFER,buffer);

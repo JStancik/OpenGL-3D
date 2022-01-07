@@ -7,5 +7,4 @@ class Shader{
 		static unsigned int CompileShader(const std::string& source, unsigned int type);
 		static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader);
 		void setUniformf(std::string name, float value);
-		int getUniformLoc(std::string name);
 };
