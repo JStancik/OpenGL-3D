@@ -69,3 +69,7 @@ void Shader::setUniformf(std::string name, float value){
     int loc = glGetUniformLocation(id,name.c_str());
     glUniform1f(loc,value);
 }
+
+int Shader::getUniformLoc(std::string name){
+    return glGetUniformLocation(id,name.c_str());
+}

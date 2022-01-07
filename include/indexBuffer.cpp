@@ -6,6 +6,8 @@
 
 #include "indexBuffer.hpp"
 
+IndexBuffer::IndexBuffer(){}
+
 IndexBuffer::IndexBuffer(int charSize, unsigned int index[]){
 	glGenBuffers(1,&buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffer);
