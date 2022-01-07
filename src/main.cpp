@@ -7,8 +7,6 @@
 #include <iostream>
 
 #include "shaders.cpp"
-#include "indexBuffer.cpp"
-#include "vertexBuffer.cpp"
 #include "renderer.cpp"
 #include "object.cpp"
 #define STB_IMAGE_IMPLEMENTATION
@@ -18,7 +16,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
 }
 
-int loadBMPTexture(const char * imagePath){
+int loadTexture(const char * imagePath){
     unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -85,39 +83,14 @@ int main(){
     float mouseSpeed = 0.2f;
     float lastTime;
     float deltaTime;
-
-    float vecPosition[] = {
-         1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-         1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-         1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
-         1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-        -1.0f,-1.0f,-1.0f,   0.0f, 1.0f
-    };
-
-    unsigned int index[] = {
-        4,2,0,
-        4,6,2,
-        5,1,3,
-        7,5,3,
-        4,0,1,
-        5,4,1,
-        3,2,6,
-        7,3,6,
-        7,6,4,
-        5,7,4,
-        1,0,2,
-        3,1,2
-    };
     
     unsigned int vertexArray;
 
     glGenVertexArrays(1,&vertexArray);
     glBindVertexArray(vertexArray);
-
-    Object obj(8*5 * sizeof(float),3*12 * sizeof(int),vecPosition,index);
+    
+    Object obj("res/3D Models/untitled.obj");
+    
 
     GLintptr vertAt0 = 0*sizeof(float);
     GLintptr vertAt1 = 3*sizeof(float);
@@ -128,11 +101,11 @@ int main(){
 
     Shader shader("data/shaders/texTriV.glsl","data/shaders/texTriF.glsl");
 
-    int MVPID = glGetUniformLocation(shader.id,"MVP");
+    int MVPID = shader.getUniformLoc("MVP");
 
 
-    int tex = loadBMPTexture("data/gfx/happy.png");
-    int textureID = glGetUniformLocation(shader.id,"TexSampler");
+    int tex = loadTexture("data/gfx/Teximg.png");
+    int textureID = shader.getUniformLoc("TexSampler");
 
     glUseProgram(shader.id);
 
@@ -215,7 +188,7 @@ int main(){
         // Model matrix : an identity matrix (model will be at the origin)
         glm::mat4 Model      = glm::mat4(1.0f);
         // Our ModelViewProjection : multiplication of our 3 matrices
-        glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
+        glm::mat4 MVP        = Projection * View * Model; // matrix multiplication reversed
 
 
         glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
