@@ -126,12 +126,12 @@ int main(){
     obj.vb.enableAtributes(0,3,5 * sizeof(float),vertAt0);
     obj.vb.enableAtributes(1,2,5 * sizeof(float),vertAt1);
 
-    Shader shader("data/shaders/texTriV.glsl","data/shaders/texTriF.glsl");
+    Shader shader("res/shaders/texTriV.glsl","res/shaders/texTriF.glsl");
 
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
 
-    int tex = loadBMPTexture("data/gfx/happy.png");
+    int tex = loadBMPTexture("res/gfx/happy.png");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
 
     glUseProgram(shader.id);
