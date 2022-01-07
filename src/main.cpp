@@ -143,7 +143,7 @@ int main(){
         // Reset mouse position for next frame
         glfwSetCursorPos(window,1024/2, 512/2);
         // Compute new orientation
-        horizontalAngle -= mouseSpeed * deltaTime * float(1024/2 - xpos );
+        horizontalAngle += mouseSpeed * deltaTime * float(1024/2 - xpos );
         verticalAngle   += mouseSpeed * deltaTime * float( 512/2 - ypos );
         // Direction : Spherical coordinates to Cartesian coordinates conversion
         glm::vec3 direction(
