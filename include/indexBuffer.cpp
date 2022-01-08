@@ -11,3 +11,5 @@ IndexBuffer::IndexBuffer(int charSize, unsigned int index[]){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, charSize,index,GL_STATIC_DRAW);
 }
+
+IndexBuffer::IndexBuffer(){}

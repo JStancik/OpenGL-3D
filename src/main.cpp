@@ -32,13 +32,14 @@ int loadBMPTexture(const char * imagePath){
     unsigned char *data = stbi_load(imagePath, &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
     {
-        std::cout << "Failed to load texture" << std::endl;
+        std::cout << "Failed to load texture" <<std::endl;
     }
+    std::cout<<nrChannels<<", "<<width<<", "<<height<<", "<<data<< std::endl;
     stbi_image_free(data);
     return texture;
 }
@@ -117,7 +118,7 @@ int main(){
     glGenVertexArrays(1,&vertexArray);
     glBindVertexArray(vertexArray);
 
-    Object obj(8*5 * sizeof(float),3*12 * sizeof(int),vecPosition,index);
+    Object obj("res/3D Models/untitled.obj"); //8*5 * sizeof(float),3*12 * sizeof(int),vecPosition,index
 
     GLintptr vertAt0 = 0*sizeof(float);
     GLintptr vertAt1 = 3*sizeof(float);
@@ -131,7 +132,7 @@ int main(){
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
 
-    int tex = loadBMPTexture("res/gfx/happy.png");
+    int tex = loadBMPTexture("res/gfx/TexImg.png");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
 
     glUseProgram(shader.id);

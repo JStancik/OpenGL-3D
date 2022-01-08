@@ -16,3 +16,5 @@ void VertexBuffer::enableAtributes(int index, int atCount, int strideBytes, GLin
     glEnableVertexAttribArray(index);
     glVertexAttribPointer(index,atCount,GL_FLOAT,GL_FALSE,strideBytes, (void*)offset);
 }
+
+VertexBuffer::VertexBuffer(){}

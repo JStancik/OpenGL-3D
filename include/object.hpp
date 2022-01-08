@@ -8,6 +8,7 @@ class Object{
 		VertexBuffer vb;
 		IndexBuffer ib;
 		Object(int dataCharSize, int indexCharSize,float data[],unsigned int index[]);
+		Object(std::string filePath);
 	private:
 
 };
