@@ -53,8 +53,11 @@ int main(){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_CURSOR_HIDDEN,true);
+
+    int WINDOW_WIDTH = 1920;
+    int WINDOW_HEIGHT = 1080;
     
-    GLFWwindow* window = glfwCreateWindow(1024, 512, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "LearnOpenGL", NULL, NULL);
 
     if (window == NULL){
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -108,7 +111,7 @@ int main(){
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
 
-    int tex = loadBMPTexture("res/gfx/TexImg.png");
+    int tex = loadBMPTexture("D:/Users/stancik/Pictures/Nikon Transfer 3/20140518/DSC_0174_20140518_2947.JPG");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
 
     glUseProgram(shader.id);
@@ -118,10 +121,10 @@ int main(){
         double xpos, ypos;
         glfwGetCursorPos(window,&xpos,&ypos);
         // Reset mouse position for next frame
-        glfwSetCursorPos(window,1024/2, 512/2);
+        glfwSetCursorPos(window,WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
         // Compute new orientation
-        horizontalAngle += mouseSpeed * deltaTime * float(1024/2 - xpos );
-        verticalAngle   += mouseSpeed * deltaTime * float( 512/2 - ypos );
+        horizontalAngle += mouseSpeed * deltaTime * float(WINDOW_WIDTH/2 - xpos );
+        verticalAngle   += mouseSpeed * deltaTime * float( WINDOW_HEIGHT/2 - ypos );
         // Direction : Spherical coordinates to Cartesian coordinates conversion
         glm::vec3 direction(
             cos(verticalAngle) * sin(horizontalAngle),
@@ -182,7 +185,7 @@ int main(){
 		// Set our "myTextureSampler" sampler to use Texture Unit 0
 		glUniform1i(textureID, 0);
 
-        glm::mat4 Projection = glm::perspective(glm::radians(FoV), 2.0f, 0.1f, 100.0f);
+        glm::mat4 Projection = glm::perspective(glm::radians(FoV), (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 100.0f);
         // Camera matrix
         glm::mat4 View       = glm::lookAt(
                                     camPosition,
