@@ -30,16 +30,18 @@ int loadBMPTexture(const char * imagePath){
     // load and generate the texture
     int width, height, nrChannels;
     unsigned char *data = stbi_load(imagePath, &width, &height, &nrChannels, 0);
-    if (data)
+    if (data && nrChannels==3)
     {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    }
+    else if (data && nrChannels==4){
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
     {
         std::cout << "Failed to load texture" <<std::endl;
     }
-    std::cout<<nrChannels<<", "<<width<<", "<<height<<", "<<data<< std::endl;
+    glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
     return texture;
 }
@@ -86,32 +88,6 @@ int main(){
     float mouseSpeed = 0.2f;
     float lastTime;
     float deltaTime;
-
-    float vecPosition[] = {
-         1.0f, 1.0f, 1.0f,   1.0f, 1.0f,
-         1.0f, 1.0f,-1.0f,   0.0f, 1.0f,
-         1.0f,-1.0f, 1.0f,   1.0f, 0.0f,
-         1.0f,-1.0f,-1.0f,   0.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f,   1.0f, 0.0f,
-        -1.0f, 1.0f,-1.0f,   1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,   0.0f, 0.0f,
-        -1.0f,-1.0f,-1.0f,   0.0f, 1.0f
-    };
-
-    unsigned int index[] = {
-        4,2,0,
-        4,6,2,
-        5,1,3,
-        7,5,3,
-        4,0,1,
-        5,4,1,
-        3,2,6,
-        7,3,6,
-        7,6,4,
-        5,7,4,
-        1,0,2,
-        3,1,2
-    };
     
     unsigned int vertexArray;
 
@@ -222,7 +198,7 @@ int main(){
         glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
         glUniform1i(textureID,0);
 
-        glDrawElements(GL_TRIANGLES,12*3, GL_UNSIGNED_INT,0);
+        glDrawElements(GL_TRIANGLES,obj.ibLength, GL_UNSIGNED_INT,0);
 
         glfwSwapBuffers(window);
     }

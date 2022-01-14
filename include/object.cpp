@@ -1,5 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 #include <vector>
 #include <iostream>
@@ -13,7 +15,7 @@
 #include "object.hpp"
 
 Object::Object(int dChar, int iChar,float data[],unsigned int index[]):vb(dChar,data),ib(iChar,index){
-	
+	ibLength = iChar/sizeof(int);
 }
 
 Object::Object(std::string filePath){
@@ -87,7 +89,7 @@ Object::Object(std::string filePath){
 				data.push_back(verts[i[j]-1].y);
 				data.push_back(verts[i[j]-1].z);
 				data.push_back(texVerts[t[j]-1].x);
-				data.push_back(texVerts[t[j]-1].y);
+				data.push_back(1-texVerts[t[j]-1].y);
 			}
 		}
 
@@ -106,4 +108,5 @@ Object::Object(std::string filePath){
 	}
 	vb = VertexBuffer(dChar,arrData);
 	ib = IndexBuffer(iChar,arrIndex);
+	ibLength = iChar/sizeof(int);
 }
