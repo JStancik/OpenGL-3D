@@ -54,8 +54,8 @@ int main(){
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_CURSOR_HIDDEN,true);
 
-    int WINDOW_WIDTH = 1920;
-    int WINDOW_HEIGHT = 1080;
+    int WINDOW_WIDTH = 1024;
+    int WINDOW_HEIGHT = 512;
     
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "LearnOpenGL", NULL, NULL);
 
@@ -91,13 +91,16 @@ int main(){
     float mouseSpeed = 0.2f;
     float lastTime;
     float deltaTime;
+
+    double lastFrameMeasure = glfwGetTime();
+    int frameCount;
     
     unsigned int vertexArray;
 
     glGenVertexArrays(1,&vertexArray);
     glBindVertexArray(vertexArray);
 
-    Object obj("res/3D Models/untitled.obj"); //8*5 * sizeof(float),3*12 * sizeof(int),vecPosition,index
+    Object obj("res/3D Models/tourus.obj");
 
     GLintptr vertAt0 = 0*sizeof(float);
     GLintptr vertAt1 = 3*sizeof(float);
@@ -111,7 +114,7 @@ int main(){
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
 
-    int tex = loadBMPTexture("D:/Users/stancik/Pictures/Nikon Transfer 3/20140518/DSC_0174_20140518_2947.JPG");
+    int tex = loadBMPTexture("res/gfx/TourusImg.png");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
 
     glUseProgram(shader.id);
@@ -148,6 +151,13 @@ int main(){
         deltaTime = float(currentTime - lastTime);
         lastTime = currentTime;
 
+        frameCount++;
+        if(currentTime - lastFrameMeasure >= 1.0){
+            std::cout<<"MSPF: "<<1000.0/(float)frameCount<<"     FPS:"<<frameCount<<std::endl;
+            lastFrameMeasure += 1;
+            frameCount = 0;
+        }
+
         glfwPollEvents();
 
         if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
@@ -182,7 +192,7 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		glBindTexture(GL_TEXTURE_2D, tex);
-		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		// Set our "TexSampler" sampler to use Texture Unit 0
 		glUniform1i(textureID, 0);
 
         glm::mat4 Projection = glm::perspective(glm::radians(FoV), (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 100.0f);
