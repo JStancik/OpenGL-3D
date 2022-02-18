@@ -106,6 +106,7 @@ Object::Object(std::string filePath){
 	for(int i=0;i<index.size();i++){
 		arrIndex[i] = index[i];
 	}
+	
 	vb = VertexBuffer(dChar,arrData);
 	ib = IndexBuffer(iChar,arrIndex);
 	ibLength = iChar/sizeof(int);

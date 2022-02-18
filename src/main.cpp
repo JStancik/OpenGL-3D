@@ -11,12 +11,9 @@
 #include "vertexBuffer.cpp"
 #include "renderer.cpp"
 #include "object.cpp"
+#include "camera.cpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height){
-    glViewport(0, 0, width, height);
-}
 
 int loadBMPTexture(const char * imagePath){
     unsigned int texture;
@@ -47,65 +44,18 @@ int loadBMPTexture(const char * imagePath){
 }
 
 int main(){
-
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_CURSOR_HIDDEN,true);
-
-    int WINDOW_WIDTH = 1024;
-    int WINDOW_HEIGHT = 512;
-    
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "LearnOpenGL", NULL, NULL);
-
-    if (window == NULL){
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-
-    // Enable depth test
-	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS);
-
-    glEnable(GL_CULL_FACE);
-
     // position
-    glm::vec3 camPosition = glm::vec3(0, 0, 5);
-    float horizontalAngle = 3.14f;
-    float verticalAngle = 0.0f;
-    float initialFoV = 45.0f;
-
-    float speed = 5.0f; // 3 units / second
-    float mouseSpeed = 0.2f;
-    float lastTime;
-    float deltaTime;
-
+    Renderer renderer(512,1024);
+    Camera cam;
+    
     double lastFrameMeasure = glfwGetTime();
     int frameCount;
-    
-    unsigned int vertexArray;
-
-    glGenVertexArrays(1,&vertexArray);
-    glBindVertexArray(vertexArray);
 
     Object obj("res/3D Models/tourus.obj");
 
     GLintptr vertAt0 = 0*sizeof(float);
     GLintptr vertAt1 = 3*sizeof(float);
 
-    
     obj.vb.enableAtributes(0,3,5 * sizeof(float),vertAt0);
     obj.vb.enableAtributes(1,2,5 * sizeof(float),vertAt1);
 
@@ -119,101 +69,16 @@ int main(){
 
     glUseProgram(shader.id);
 
-    while(!glfwWindowShouldClose(window)){
-        // Get mouse position
-        double xpos, ypos;
-        glfwGetCursorPos(window,&xpos,&ypos);
-        // Reset mouse position for next frame
-        glfwSetCursorPos(window,WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-        // Compute new orientation
-        horizontalAngle += mouseSpeed * deltaTime * float(WINDOW_WIDTH/2 - xpos );
-        verticalAngle   += mouseSpeed * deltaTime * float( WINDOW_HEIGHT/2 - ypos );
-        // Direction : Spherical coordinates to Cartesian coordinates conversion
-        glm::vec3 direction(
-            cos(verticalAngle) * sin(horizontalAngle),
-            sin(verticalAngle),
-            cos(verticalAngle) * cos(horizontalAngle)
-        );
-
-        // Right vector
-        glm::vec3 right = glm::vec3(
-            sin(horizontalAngle - 3.14f/2.0f),
-            0,
-            cos(horizontalAngle - 3.14f/2.0f)
-        );
-
-        // Up vector : perpendicular to both direction and right
-        glm::vec3 up = glm::cross( right, direction );
-
-        float FoV = 85;
-
+    while(!glfwWindowShouldClose(renderer.window)){
+        
         float currentTime = glfwGetTime();
-        deltaTime = float(currentTime - lastTime);
-        lastTime = currentTime;
-
         frameCount++;
         if(currentTime - lastFrameMeasure >= 1.0){
             std::cout<<"MSPF: "<<1000.0/(float)frameCount<<"     FPS:"<<frameCount<<std::endl;
             lastFrameMeasure += 1;
             frameCount = 0;
         }
-
-        glfwPollEvents();
-
-        if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
-            glfwSetWindowShouldClose(window, true);
-        }
-        // Move forward
-        if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
-            camPosition += direction * deltaTime * speed;
-        }
-        // Move backward
-        if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
-            camPosition -= direction * deltaTime * speed;
-        }
-        // Strafe right
-        if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
-            camPosition += right * deltaTime * speed;
-        }
-        // Strafe left
-        if (glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS){
-            camPosition -= right * deltaTime * speed;
-        }
-        // Move up
-        if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS){
-            camPosition += up * deltaTime * speed;
-        }
-        // Move down
-        if (glfwGetKey( window, GLFW_KEY_LEFT_SHIFT ) == GLFW_PRESS){
-            camPosition -= up * deltaTime * speed;
-        }
-
-
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
-		glBindTexture(GL_TEXTURE_2D, tex);
-		// Set our "TexSampler" sampler to use Texture Unit 0
-		glUniform1i(textureID, 0);
-
-        glm::mat4 Projection = glm::perspective(glm::radians(FoV), (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 100.0f);
-        // Camera matrix
-        glm::mat4 View       = glm::lookAt(
-                                    camPosition,
-                                    camPosition+direction, 
-                                    up
-                            );
-        // Model matrix : an identity matrix (model will be at the origin)
-        glm::mat4 Model      = glm::mat4(1.0f);
-        // Our ModelViewProjection : multiplication of our 3 matrices
-        glm::mat4 MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
-
-
-        glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
-        glUniform1i(textureID,0);
-
-        glDrawElements(GL_TRIANGLES,obj.ibLength, GL_UNSIGNED_INT,0);
-
-        glfwSwapBuffers(window);
+        renderer.drawObj(obj,tex,textureID,MVPID,cam.updateCamera(renderer,1024,512));
     }
 
     glDeleteBuffers(1,&obj.vb.buffer);
