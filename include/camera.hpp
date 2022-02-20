@@ -5,14 +5,20 @@
 class Camera{
 	public:
 		glm::vec3 camPosition;
-		float horizontalAngle;
-		float verticalAngle;
-		float initialFoV;
-
+		glm::vec3 direction;
+		Camera(float FoV,int width,int height);
+		void updateCamera(Renderer inputWindow,int width,int height,float aspeed);
+		glm::mat4 getMVP(Renderer inputWindow,int width,int height,glm::mat4 Model);
+	private:
+		glm::vec3 right;
+		glm::vec3 up;
+		glm::mat4 Projection;
+		
     	float speed;
     	float mouseSpeed;
     	float lastTime;
     	float deltaTime;
-		Camera();
-		glm::mat4 updateCamera(Renderer inputWindow,int width,int height);
+		
+		float horizontalAngle;
+		float verticalAngle;
 };

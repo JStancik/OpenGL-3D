@@ -36,15 +36,20 @@ Renderer::Renderer(int height,int width){
     glBindVertexArray(vertexArray);
 }
 
-void Renderer::drawObj(Object obj,int tex,int textureID,int MVPID,glm::mat4 MVP){
-	glfwPollEvents();
+void Renderer::startRender(){
+	glfwSwapBuffers(window);
+
+    glfwPollEvents();
 
 	if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
 		glfwSetWindowShouldClose(window, true);
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+}
 
+void Renderer::drawObj(Object obj,int tex,int textureID,int MVPID,glm::mat4 MVP){
+    glBindBuffer(GL_ARRAY_BUFFER,obj.vb.buffer);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	// Set our "TexSampler" sampler to use Texture Unit 0
 	glUniform1i(textureID, 0);
@@ -53,6 +58,4 @@ void Renderer::drawObj(Object obj,int tex,int textureID,int MVPID,glm::mat4 MVP)
 	glUniform1i(textureID,0);
 
 	glDrawElements(GL_TRIANGLES,obj.ibLength, GL_UNSIGNED_INT,0);
-
-	glfwSwapBuffers(window);
 }

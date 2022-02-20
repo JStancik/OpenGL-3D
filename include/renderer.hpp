@@ -5,5 +5,6 @@ class Renderer{
 	public:
 		GLFWwindow* window;
 		Renderer(int width,int height);
+		void startRender();
 		void drawObj(Object obj,int tex,int textureID,int MVPID,glm::mat4 MVP);
 };

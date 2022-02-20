@@ -46,7 +46,7 @@ int loadBMPTexture(const char * imagePath){
 int main(){
     // position
     Renderer renderer(512,1024);
-    Camera cam;
+    Camera cam(85.0,1024,512);
     
     double lastFrameMeasure = glfwGetTime();
     int frameCount;
@@ -67,18 +67,48 @@ int main(){
     int tex = loadBMPTexture("res/gfx/TourusImg.png");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
 
+    bool isSpeedy = false;
+    bool isSlow   = false;
+
     glUseProgram(shader.id);
 
     while(!glfwWindowShouldClose(renderer.window)){
+
+        if(glfwGetKey(renderer.window,GLFW_KEY_LEFT_CONTROL))
+            isSpeedy = true;
+        else
+            isSpeedy = false;
+        if(glfwGetKey(renderer.window,GLFW_KEY_LEFT_ALT))
+            isSlow = true;
+        else
+            isSlow = false;
         
         float currentTime = glfwGetTime();
         frameCount++;
         if(currentTime - lastFrameMeasure >= 1.0){
             std::cout<<"MSPF: "<<1000.0/(float)frameCount<<"     FPS:"<<frameCount<<std::endl;
+            std::cout<<"________________________"<<std::endl;
+            std::cout<<"CAMERA:                 "<<std::endl;
+            std::cout<<"pos: "<<cam.camPosition.x<<", "<<cam.camPosition.y<<", "<<cam.camPosition.z<<std::endl;
+            std::cout<<"Facing: "<<cam.direction.x<<", "<<cam.direction.y<<", "<<cam.direction.z<<std::endl;
+            std::cout<<"________________________"<<std::endl;
             lastFrameMeasure += 1;
             frameCount = 0;
         }
-        renderer.drawObj(obj,tex,textureID,MVPID,cam.updateCamera(renderer,1024,512));
+        cam.updateCamera(renderer,1024,512,isSpeedy?50.0:isSlow?0.5:5.0);
+        renderer.startRender();
+        srand(8);
+
+        for(float x=0.0f;x<100.0f;x+=5.0f){
+            for(float y=0.0f;y<100.0f;y+=5.0f){
+                for(float z=0.0f;z<100.0f;z+=5.0f){
+                    glm::mat4 Model = glm::scale(glm::vec3((float)rand()/RAND_MAX));
+                    Model = glm::rotate((float)rand()/RAND_MAX*6.28319f,glm::vec3((float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1))*Model;
+                    Model = glm::translate(glm::vec3(x,y,z))*Model;
+                    renderer.drawObj(obj,tex,textureID,MVPID,cam.getMVP(renderer,1024,512,Model));
+                }
+            }
+        }
     }
 
     glDeleteBuffers(1,&obj.vb.buffer);
