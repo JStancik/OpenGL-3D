@@ -7,7 +7,7 @@
 #include <renderer.cpp>
 
 Camera::Camera(float FoV,int width,int height){
-	camPosition = glm::vec3(0, 0, 6);
+	camPosition = glm::vec3(0, 0, 30);
 	horizontalAngle = 3.14f;
 	verticalAngle = 0.0f;
 

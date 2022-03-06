@@ -5,6 +5,7 @@
 #include <glm/gtx/transform.hpp>
 
 #include <iostream>
+#include <vector>
 
 #include "shaders.cpp"
 #include "indexBuffer.cpp"
@@ -12,6 +13,9 @@
 #include "renderer.cpp"
 #include "object.cpp"
 #include "camera.cpp"
+
+#include "gravSystem.cpp"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
@@ -51,7 +55,7 @@ int main(){
     double lastFrameMeasure = glfwGetTime();
     int frameCount;
 
-    Object obj("res/3D Models/tourus.obj");
+    Object obj("res/3D Models/sphere.obj");
 
     GLintptr vertAt0 = 0*sizeof(float);
     GLintptr vertAt1 = 3*sizeof(float);
@@ -64,13 +68,22 @@ int main(){
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
 
-    int tex = loadBMPTexture("res/gfx/TourusImg.png");
+    int tex = loadBMPTexture("res/gfx/BasicPlanet.png");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
 
     bool isSpeedy = false;
     bool isSlow   = false;
 
+    bool isPause = false;
+
     glUseProgram(shader.id);
+
+    gravSystem gravSys(std::vector<gravBody> {
+        gravBody(1.0f,10.0f,glm::vec3( 0.0f, 0.0f, 10.0f),glm::vec3( 0.4f,0.0f,0.0f)),
+        gravBody(1.0f,10.0f,glm::vec3( 0.0f, 0.0f,-10.0f),glm::vec3(-0.35f,0.0f,0.0f))
+    },
+    std::vector<gravBody> {
+    });
 
     while(!glfwWindowShouldClose(renderer.window)){
 
@@ -82,6 +95,8 @@ int main(){
             isSlow = true;
         else
             isSlow = false;
+        if(glfwGetKey(renderer.window,GLFW_KEY_P))
+            isPause = !isPause;
         
         float currentTime = glfwGetTime();
         frameCount++;
@@ -95,20 +110,12 @@ int main(){
             lastFrameMeasure += 1;
             frameCount = 0;
         }
-        cam.updateCamera(renderer,1024,512,isSpeedy?50.0:isSlow?0.5:5.0);
-        renderer.startRender();
-        srand(8);
+        if(!isPause)
+            cam.updateCamera(renderer,1024,512,isSpeedy?50.0:isSlow?0.5:5.0);
 
-        for(float x=0.0f;x<100.0f;x+=5.0f){
-            for(float y=0.0f;y<100.0f;y+=5.0f){
-                for(float z=0.0f;z<100.0f;z+=5.0f){
-                    glm::mat4 Model = glm::scale(glm::vec3((float)rand()/RAND_MAX));
-                    Model = glm::rotate((float)rand()/RAND_MAX*6.28319f,glm::vec3((float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1))*Model;
-                    Model = glm::translate(glm::vec3(x,y,z))*Model;
-                    renderer.drawObj(obj,tex,textureID,MVPID,cam.getMVP(renderer,1024,512,Model));
-                }
-            }
-        }
+        gravSys.updateSystem(0.05f);
+        renderer.startRender();
+        gravSys.drawSystem(renderer,obj,cam,tex,textureID,MVPID,1024,512);
     }
 
     glDeleteBuffers(1,&obj.vb.buffer);

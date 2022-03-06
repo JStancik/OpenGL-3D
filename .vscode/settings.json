@@ -1,6 +1,11 @@
 {
 	"files.associations": {
 		"*.ino": "code-text-binary",
-		"iostream": "cpp"
+		"iostream": "cpp",
+		"*.tcc": "cpp",
+		"cmath": "cpp",
+		"complex": "cpp",
+		"random": "cpp",
+		"ostream": "cpp"
 	}
 }
