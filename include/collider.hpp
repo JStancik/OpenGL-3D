@@ -4,13 +4,13 @@
 
 class Collider{
 	public:
-		Collider(std::vector<glm::vec4> verts);
+		Collider(std::vector<glm::vec3> verts);
 		bool isColliding(Collider col1);
-		glm::vec4 getCollision(Collider col1);
+		glm::vec3 getCollision(Collider col1);
 	private:
-		std::vector<glm::vec4> verts;
+		std::vector<glm::vec3> verts;
 
-		glm::vec4 dirToPoint(glm::vec4 dir);
+		glm::vec3 dirToPoint(glm::vec3 dir);
 
 		void handleCase();
 		void pointCase(std::vector<glm::vec3> &points, glm::vec3 &dir);

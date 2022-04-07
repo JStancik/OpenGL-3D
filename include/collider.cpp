@@ -3,11 +3,11 @@
 #include <glm/gtx/transform.hpp>
 #include "collider.hpp"
 
-Collider::Collider(std::vector<glm::vec4> verts): verts(verts)  {}
+Collider::Collider(std::vector<glm::vec3> verts): verts(verts)  {}
 
-glm::vec4 Collider::dirToPoint(glm::vec4 dir){
+glm::vec3 Collider::dirToPoint(glm::vec3 dir){
 	float maxDotProd = -std::numeric_limits<float>::infinity();
-	glm::vec4 maxDotPoint;
+	glm::vec3 maxDotPoint;
 	for(int i=0;i<verts.size();i++){
 		if(glm::dot(verts[i],dir)>maxDotProd){
 			maxDotPoint = verts[i];
@@ -39,6 +39,9 @@ void Collider::triCase(std::vector<glm::vec3> &points, glm::vec3 &dir){
 	}
 	else{
 		dir = glm::cross(points[0],points[1]);
-		return;
 	}
+}
+
+void Collider::tetraCase(std::vector<glm::vec3> &points, glm::vec3 &dir){
+	
 }
