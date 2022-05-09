@@ -68,7 +68,7 @@ int main(){
     int MVPID = glGetUniformLocation(shader.id,"MVP");
 
 
-    int tex = loadBMPTexture("res/gfx/BasicPlanet.png");
+    int tex = loadBMPTexture("res/gfx/TourusImg.png");
     int textureID = glGetUniformLocation(shader.id,"TexSampler");
 
     bool isSpeedy = false;
@@ -77,13 +77,6 @@ int main(){
     bool isPause = false;
 
     glUseProgram(shader.id);
-
-    gravSystem gravSys(std::vector<gravBody> {
-        gravBody(1.0f,10.0f,glm::vec3( 0.0f, 0.0f, 10.0f),glm::vec3( 0.4f,0.0f,0.0f)),
-        gravBody(1.0f,10.0f,glm::vec3( 0.0f, 0.0f,-10.0f),glm::vec3(-0.35f,0.0f,0.0f))
-    },
-    std::vector<gravBody> {
-    });
 
     while(!glfwWindowShouldClose(renderer.window)){
 
@@ -113,9 +106,20 @@ int main(){
         if(!isPause)
             cam.updateCamera(renderer,1024,512,isSpeedy?50.0:isSlow?0.5:5.0);
 
-        gravSys.updateSystem(0.05f);
         renderer.startRender();
-        gravSys.drawSystem(renderer,obj,cam,tex,textureID,MVPID,1024,512);
+
+        srand(8);
+        
+        for(float x=0.0f;x<100.0f;x+=5.0f){
+            for(float y=0.0f;y<100.0f;y+=5.0f){
+                for(float z=0.0f;z<100.0f;z+=5.0f){
+                    glm::mat4 Model = glm::scale(glm::vec3((float)rand()/RAND_MAX*5));
+                    Model = glm::rotate((float)rand()/RAND_MAX*6.28319f,glm::vec3((float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1))*Model;
+                    Model = glm::translate(glm::vec3(x,y,z))*Model;
+                    renderer.drawObj(obj,tex,textureID,MVPID,cam.getMVP(renderer,1024,512,Model));
+                }
+            }
+        }
     }
 
     glDeleteBuffers(1,&obj.vb.buffer);
