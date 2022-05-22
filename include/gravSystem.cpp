@@ -27,6 +27,7 @@ void gravSystem::updateSystem(float G){
 			std::cout<<"Pos:"<<std::endl;
 			std::cout<<(*grav[i]).pos.x<<", "<<(*grav[i]).pos.y<<", "<<(*grav[i]).pos.z<<std::endl;
 			std::cout<<"_________________________________"<<std::endl;
+			throw;
 		}
 		(*grav[i]).applyForce(force);
 		(*grav[i]).update();

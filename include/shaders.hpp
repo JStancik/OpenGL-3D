@@ -4,6 +4,8 @@
 class Shader{
 	public:
 		unsigned int id;
+		int texID;
+		int MVPID;
 		Shader(std::string fileAddressV,std::string fileAddressF);
 		static unsigned int CompileShader(const std::string& source, unsigned int type);
 		static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader);

@@ -3,9 +3,9 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-#include<fstream>
-#include<sstream>
-#include<string>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #include "shaders.hpp"
 
@@ -48,6 +48,11 @@ unsigned int Shader::createShader(const std::string& vertexShader, const std::st
     return program;
 }
 
+void Shader::setUniformf(std::string name, float value){
+    int loc = glGetUniformLocation(id,name.c_str());
+    glUniform1f(loc,value);
+}
+
 Shader::Shader(std::string fileAddressV,std::string fileAddressF){
     std::ifstream fV(fileAddressV);
     std::ifstream fF(fileAddressF);
@@ -63,9 +68,7 @@ Shader::Shader(std::string fileAddressV,std::string fileAddressF){
 		strF = ssF.str();
     }
 	id = createShader(strV,strF);
-}
-
-void Shader::setUniformf(std::string name, float value){
-    int loc = glGetUniformLocation(id,name.c_str());
-    glUniform1f(loc,value);
+    
+    texID = glGetUniformLocation(id,"TexSampler");
+    MVPID = glGetUniformLocation(id,"MVP");
 }

@@ -11,11 +11,12 @@
 #include <bits/stdc++.h>
 
 
-#include "indexBuffer.cpp"
-#include "vertexBuffer.cpp"
+#include "indexBuffer.hpp"
+#include "vertexBuffer.hpp"
+#include "shaders.hpp"
 #include "object.hpp"
 
-Object::Object(int dChar, int iChar,float data[],unsigned int index[]):vb(dChar,data),ib(iChar,index){
+Object::Object(int dChar, int iChar,float data[],unsigned int index[],Shader &shader):vb(dChar,data),ib(iChar,index){
 	ibLength = iChar/sizeof(int);
 }
 
@@ -111,4 +112,10 @@ Object::Object(std::string filePath){
 	vb = VertexBuffer(dChar,arrData);
 	ib = IndexBuffer(iChar,arrIndex);
 	ibLength = iChar/sizeof(int);
+
+	GLintptr vertAt0 = 0*sizeof(float);
+    GLintptr vertAt1 = 3*sizeof(float);
+
+    vb.enableAtributes(0,3,5 * sizeof(float),vertAt0);
+    vb.enableAtributes(1,2,5 * sizeof(float),vertAt1);
 }

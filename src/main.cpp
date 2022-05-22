@@ -55,23 +55,15 @@ int main(){
     double lastFrameMeasure = glfwGetTime();
     int frameCount;
 
-    Object obj("res/3D Models/sphere.obj");
-
-    GLintptr vertAt0 = 0*sizeof(float);
-    GLintptr vertAt1 = 3*sizeof(float);
-
-    obj.vb.enableAtributes(0,3,5 * sizeof(float),vertAt0);
-    obj.vb.enableAtributes(1,2,5 * sizeof(float),vertAt1);
+    Object obj = Object("res/3D Models/prism.obj");
 
     Shader shader("res/shaders/texTriV.glsl","res/shaders/texTriF.glsl");
 
-    int MVPID = glGetUniformLocation(shader.id,"MVP");
+    srand(NULL);
+    
+    int tex[] = {loadBMPTexture("res/gfx/TourusImg.png"),loadBMPTexture("res/gfx/TexImg.png"),loadBMPTexture("res/gfx/happy.png"),loadBMPTexture("res/gfx/BasicPlanet.png")};
 
-
-    int tex = loadBMPTexture("res/gfx/TourusImg.png");
-    int textureID = glGetUniformLocation(shader.id,"TexSampler");
-
-    bool isSpeedy = false;
+    bool isFast   = false;
     bool isSlow   = false;
 
     bool isPause = false;
@@ -81,9 +73,9 @@ int main(){
     while(!glfwWindowShouldClose(renderer.window)){
 
         if(glfwGetKey(renderer.window,GLFW_KEY_LEFT_CONTROL))
-            isSpeedy = true;
+            isFast = true;
         else
-            isSpeedy = false;
+            isFast = false;
         if(glfwGetKey(renderer.window,GLFW_KEY_LEFT_ALT))
             isSlow = true;
         else
@@ -104,7 +96,7 @@ int main(){
             frameCount = 0;
         }
         if(!isPause)
-            cam.updateCamera(renderer,1024,512,isSpeedy?50.0:isSlow?0.5:5.0);
+            cam.updateCamera(renderer,1024,512,isFast?50.0:isSlow?0.5:5.0);
 
         renderer.startRender();
 
@@ -114,14 +106,13 @@ int main(){
             for(float y=0.0f;y<100.0f;y+=5.0f){
                 for(float z=0.0f;z<100.0f;z+=5.0f){
                     glm::mat4 Model = glm::scale(glm::vec3((float)rand()/RAND_MAX*5));
-                    Model = glm::rotate((float)rand()/RAND_MAX*6.28319f,glm::vec3((float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1))*Model;
                     Model = glm::translate(glm::vec3(x,y,z))*Model;
-                    renderer.drawObj(obj,tex,textureID,MVPID,cam.getMVP(renderer,1024,512,Model));
+                    Model = glm::rotate((float)rand()/RAND_MAX*6.28319f,glm::vec3((float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1,(float)rand()/RAND_MAX*2-1))*Model;
+                    renderer.drawObj(obj,tex[(int)((float)rand()/RAND_MAX*4)],shader.texID,shader.MVPID,cam.getMVP(renderer,1024,512,Model));
                 }
             }
         }
     }
-
     glDeleteBuffers(1,&obj.vb.buffer);
     glDeleteBuffers(1,&obj.ib.buffer);
     glDeleteProgram(shader.id);
