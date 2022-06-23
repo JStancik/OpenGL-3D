@@ -5,11 +5,11 @@
 #include "object.cpp"
 
 
-gravBody::gravBody(float a_size,float a_mass,glm::vec3 a_pos,glm::vec3 a_vel){
+gravBody::gravBody(float a_size,float a_mass,glm::vec3 &a_pos,glm::vec3 &a_vel){
 	size = a_size;
 	mass = a_mass;
-	pos  = a_pos;
-	vel  = a_vel;
+	pos  = &a_pos;
+	vel  = &a_vel;
 	acc  = glm::vec3(0.0f);
 }
 
@@ -18,12 +18,6 @@ void gravBody::applyForce(glm::vec3 F){
 }
 
 void gravBody::update(){
-	vel += acc;
-	pos += vel;
+	*vel += acc;
 	acc  = glm::vec3(0.0f);
-}
-
-void gravBody::drawBody(Renderer renderer,Object body,Camera cam,int tex,int textureID,int MVPID,int width,int height){
-	glm::mat4 Model = glm::translate(pos)*glm::scale(glm::vec3(size));
-	renderer.drawObj(body,tex,textureID,MVPID,cam.getMVP(renderer,width,height,Model));
 }

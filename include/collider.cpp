@@ -17,7 +17,7 @@ glm::vec3 Collider::dirToPoint(glm::vec3 dir){
 	return maxDotPoint;
 }
 
-glm::vec3 Collider::getSupPoint(Collider col1,glm::vec3 dir){
+glm::vec3 Collider::getSupPoint(Collider &col1,glm::vec3 dir){
 	return dirToPoint(dir)-col1.dirToPoint(-dir);
 }
 
@@ -123,7 +123,7 @@ bool Collider::handleCase(std::vector<glm::vec3> &points, glm::vec3 &dir){
 	}
 }
 
-bool Collider::isColliding(Collider col1){
+bool Collider::isColliding(Collider &col1){
 	std::vector<glm::vec3> points;
 	glm::vec3 searchDir(0,0,1);
 	points.push_back(getSupPoint(col1,searchDir));

@@ -27,7 +27,6 @@ Object::Object(std::string filePath){
 	std::ifstream file(filePath);
 
 	std::string str;
-	std::vector<glm::vec3> verts;
 	std::vector<glm::vec2> texVerts;
 	std::vector<float> data;
 	std::vector<int>   index;
@@ -118,4 +117,5 @@ Object::Object(std::string filePath){
 
     vb.enableAtributes(0,3,5 * sizeof(float),vertAt0);
     vb.enableAtributes(1,2,5 * sizeof(float),vertAt1);
+
 }

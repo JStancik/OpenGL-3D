@@ -3,9 +3,11 @@
 #include "indexBuffer.hpp"
 #include "shaders.hpp"
 #include <iostream>
+#include <vector>
 
 class Object{
 	public:
+		std::vector<glm::vec3> verts;
 		VertexBuffer vb;
 		IndexBuffer ib;
 		int ibLength;
